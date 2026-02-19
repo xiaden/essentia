@@ -126,7 +126,8 @@ void TensorflowPredictMusiCNN::configure() {
                                 "savedModel", savedModel,
                                 "inputs", vector<string>({input}),
                                 "outputs", vector<string>({output}),
-                                "isTrainingName", isTrainingName);
+                                "isTrainingName", isTrainingName,
+                                "devicePlacement", parameter("devicePlacement").toString());
 }
 
 } // namespace streaming
@@ -199,7 +200,8 @@ void TensorflowPredictMusiCNN::configure() {
                                        INHERIT("accumulate"),
                                        INHERIT("lastPatchMode"),
                                        INHERIT("patchSize"),
-                                       INHERIT("batchSize"));
+                                       INHERIT("batchSize"),
+                                       INHERIT("devicePlacement"));
 }
 
 

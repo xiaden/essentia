@@ -125,7 +125,8 @@ void TensorflowPredictVGGish::configure() {
                                 "savedModel", savedModel,
                                 "inputs", vector<string>({input}),
                                 "outputs", vector<string>({output}),
-                                "isTrainingName", isTrainingName);
+                                "isTrainingName", isTrainingName,
+                                "devicePlacement", parameter("devicePlacement").toString());
 }
 
 } // namespace streaming
@@ -199,7 +200,8 @@ void TensorflowPredictVGGish::configure() {
                                       INHERIT("accumulate"),
                                       INHERIT("lastPatchMode"),
                                       INHERIT("patchSize"),
-                                      INHERIT("batchSize"));
+                                      INHERIT("batchSize"),
+                                      INHERIT("devicePlacement"));
 }
 
 

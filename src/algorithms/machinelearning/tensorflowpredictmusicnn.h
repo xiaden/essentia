@@ -63,6 +63,7 @@ class TensorflowPredictMusiCNN : public AlgorithmComposite {
     declareParameter("accumulate", "(deprecated, use `batchSize`) when true it runs a single Tensorflow session at the end of the stream. Otherwise a session is run for every new patch", "{true,false}", false);
     declareParameter("batchSize", "the batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of frames required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 187);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void declareProcessOrder() {
@@ -117,6 +118,7 @@ class TensorflowPredictMusiCNN : public Algorithm {
     declareParameter("accumulate", "(deprecated, use `batchSize`) when true it runs a single Tensorflow session at the end of the stream. Otherwise a session is run for every new patch", "{true,false}", false);
     declareParameter("batchSize", "the batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of frames required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 187);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void configure();

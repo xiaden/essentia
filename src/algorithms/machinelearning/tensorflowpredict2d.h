@@ -63,6 +63,7 @@ class TensorflowPredict2D : public AlgorithmComposite {
     declareParameter("batchSize", "batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of timestamps required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 1);
     declareParameter("dimensions", "number of dimensions on the input features. This parameter should match the model's expected input shape", "[0,inf)", 200);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void declareProcessOrder() {
@@ -120,6 +121,7 @@ class TensorflowPredict2D : public Algorithm {
     declareParameter("batchSize", "batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of timestamps required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 1);
     declareParameter("dimensions", "number of dimensions on the input features. This parameter is overridden by the shape of the input data", "[0,inf)", 200);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void configure();

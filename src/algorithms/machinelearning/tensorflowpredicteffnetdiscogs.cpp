@@ -123,7 +123,8 @@ void TensorflowPredictEffnetDiscogs::configure() {
   _tensorflowPredict->configure("graphFilename", graphFilename,
                                 "savedModel", savedModel,
                                 "inputs", vector<string>({input}),
-                                "outputs", vector<string>({output}));
+                                "outputs", vector<string>({output}),
+                                "devicePlacement", parameter("devicePlacement").toString());
 }
 
 } // namespace streaming
@@ -193,7 +194,8 @@ void TensorflowPredictEffnetDiscogs::configure() {
                                              INHERIT("patchHopSize"),
                                              INHERIT("lastPatchMode"),
                                              INHERIT("batchSize"),
-                                             INHERIT("patchSize"));
+                                             INHERIT("patchSize"),
+                                             INHERIT("devicePlacement"));
 
   _patchHopSize = parameter("patchHopSize").toInt();
   _patchSize = parameter("patchSize").toInt();

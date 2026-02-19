@@ -118,7 +118,8 @@ void TensorflowPredict2D::configure() {
                                 "savedModel", savedModel,
                                 "inputs", vector<string>({input}),
                                 "outputs", vector<string>({output}),
-                                "isTrainingName", isTrainingName);
+                                "isTrainingName", isTrainingName,
+                                "devicePlacement", parameter("devicePlacement").toString());
 }
 
 } // namespace streaming
@@ -200,6 +201,7 @@ void TensorflowPredict2D::configure() {
                                        INHERIT("lastPatchMode"),
                                        INHERIT("patchSize"),
                                        INHERIT("batchSize"),
+                                       INHERIT("devicePlacement"),
                                        "dimensions", _dimensions);
 }
 

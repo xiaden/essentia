@@ -67,6 +67,7 @@ class TensorflowPredictEffnetDiscogs : public AlgorithmComposite {
     declareParameter("lastPatchMode", "what to do with the last frames: `repeat` them to fill the last patch or `discard` them", "{discard,repeat}", "discard");
     declareParameter("batchSize", "the batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of frames required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 128);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void declareProcessOrder() {
@@ -133,6 +134,7 @@ class TensorflowPredictEffnetDiscogs : public Algorithm {
     declareParameter("batchSize", "the batch size for prediction. This allows parallelization when GPUs are available. Set it to -1 or 0 to accumulate all the patches and run a single TensorFlow session at the end of the stream", "[-1,inf)", 64);
     declareParameter("patchSize", "number of frames required for each inference. This parameter should match the model's expected input shape.", "[0,inf)", 128);
     declareParameter("lastBatchMode", "some EffnetDiscogs models operate on a fixed batch size. The options are to `discard` the last patches or to pad with `zeros` to make a final batch. Additionally `same` zero-pads the input but returns only the predictions corresponding to patches with signal", "{discard,zeros,same}", "same");
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU, 'gpu' for GPU with memory growth", "", "");
   }
 
   void configure();

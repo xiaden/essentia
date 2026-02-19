@@ -65,6 +65,8 @@ class TensorflowPredict : public Algorithm {
 
   bool _isConfigured;
 
+  std::string _devicePlacement;
+
   void openGraph();
   TF_Tensor* TensorToTF(const Tensor<Real>& tensorIn);
   const Tensor<Real> TFToTensor(const TF_Tensor* tensor, TF_Output node);
@@ -114,6 +116,7 @@ class TensorflowPredict : public Algorithm {
     declareParameter("isTraining", "run the model in training mode (normalized with statistics of the current batch) instead of inference mode (normalized with moving statistics). This only applies to some models", "{true,false}", false);
     declareParameter("isTrainingName", "the name of an additional input node indicating whether the model is to be run in a training mode (for models with a training mode, leave it empty otherwise)", "", "");
     declareParameter("squeeze", "remove singleton dimensions of the inputs tensors. Does not apply to the batch dimension", "{true,false}", true);
+    declareParameter("devicePlacement", "device placement hint for TF session: empty string for auto-placement, 'cpu' to disable GPU (force CPU-only), 'gpu' for GPU with memory growth enabled", "", "");
   }
 
   void configure();

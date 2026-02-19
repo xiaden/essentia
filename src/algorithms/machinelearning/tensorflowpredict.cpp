@@ -95,6 +95,7 @@ void TensorflowPredict::configure() {
   _isTraining = parameter("isTraining").toBool();
   _isTrainingName = parameter("isTrainingName").toString();
   _squeeze = parameter("squeeze").toBool();
+  _devicePlacement = parameter("devicePlacement").toString();
 
   (_isTrainingName == "") ? _isTrainingSet = false : _isTrainingSet = true;
 
@@ -115,7 +116,47 @@ void TensorflowPredict::configure() {
   openGraph();
 
   _isConfigured = true;
-  reset();
+  // Session lifecycle: create session here, destroy in destructor.
+  // Close existing session if reconfiguring (e.g., new graph loaded).
+  if (_session) {
+    TF_CloseSession(_session, _status);
+    if (TF_GetCode(_status) != TF_OK) {
+      throw EssentiaException("TensorflowPredict: Error closing session during reconfigure. ", TF_Message(_status));
+    }
+    TF_DeleteSession(_session, _status);
+    if (TF_GetCode(_status) != TF_OK) {
+      throw EssentiaException("TensorflowPredict: Error deleting session during reconfigure. ", TF_Message(_status));
+    }
+  }
+
+  // Apply device placement configuration to session options.
+  // Hand-encoded ConfigProto wire bytes to avoid protobuf C++ dependency.
+  if (_devicePlacement == "cpu") {
+    // ConfigProto { device_count { key: "GPU" value: 0 } }
+    // Field 1 (device_count map): wire type 2 (length-delimited)
+    //   Map entry: key="GPU" (field 1, string), value=0 (field 2, varint)
+    const unsigned char proto[] = {0x0a, 0x07, 0x0a, 0x03, 0x47, 0x50, 0x55, 0x10, 0x00};
+    TF_SetConfig(_sessionOptions, proto, sizeof(proto), _status);
+    if (TF_GetCode(_status) != TF_OK) {
+      throw EssentiaException("TensorflowPredict: Error applying CPU device placement config. ", TF_Message(_status));
+    }
+  } else if (_devicePlacement == "gpu") {
+    // ConfigProto { gpu_options { allow_growth: true } }
+    // Field 6 (gpu_options): wire type 2 (length-delimited), length 2
+    //   Field 4 (allow_growth): wire type 0 (varint), value 1
+    const unsigned char proto[] = {0x32, 0x02, 0x20, 0x01};
+    TF_SetConfig(_sessionOptions, proto, sizeof(proto), _status);
+    if (TF_GetCode(_status) != TF_OK) {
+      throw EssentiaException("TensorflowPredict: Error applying GPU device placement config. ", TF_Message(_status));
+    }
+  } else if (!_devicePlacement.empty()) {
+    throw EssentiaException("TensorflowPredict: Invalid devicePlacement '"
+                            + _devicePlacement + "'. Valid values: '' (auto), 'cpu', 'gpu'.");
+  }
+  _session = TF_NewSession(_graph, _sessionOptions, _status);
+  if (TF_GetCode(_status) != TF_OK) {
+    throw EssentiaException("TensorflowPredict: Error creating session. ", TF_Message(_status));
+  }
 
   // If the first output name is empty just print out the list of nodes and return.
   if (_outputNames[0] == "") {
@@ -216,26 +257,12 @@ void TensorflowPredict::openGraph() {
 
 
 void TensorflowPredict::reset() {
-  if (!_isConfigured) return;
-
-  // Close and delete existing session if present (reconfiguration case)
-  if (_session) {
-    TF_CloseSession(_session, _status);
-    if (TF_GetCode(_status) != TF_OK) {
-      throw EssentiaException("TensorflowPredict: Error closing session. ", TF_Message(_status));
-    }
-
-    TF_DeleteSession(_session, _status);
-    if (TF_GetCode(_status) != TF_OK) {
-      throw EssentiaException("TensorflowPredict: Error deleting session. ", TF_Message(_status));
-    }
-  }
-
-  // Create new session (this is where TF GPU initialization happens)
-  _session = TF_NewSession(_graph, _sessionOptions, _status);
-  if (TF_GetCode(_status) != TF_OK) {
-    throw EssentiaException("TensorflowPredict: Error creating new session after reset. ", TF_Message(_status));
-  }
+  // No-op: TF sessions for frozen graph inference are stateless between runs.
+  // Session lifecycle is managed by configure() (creation) and destructor (cleanup).
+  // The streaming framework calls reset() between audio chunks via network cascades,
+  // but there is no session state to clear for inference-only frozen graphs.
+  // Recreating sessions here was an oversight that caused expensive GPU device
+  // re-initialization on every compute() call in composite wrappers.
 }
 
 
