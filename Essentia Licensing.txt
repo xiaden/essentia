@@ -33,7 +33,7 @@ FFTW: Copyright (c) 2003, 2007-11 Matteo Frigo and Copyright (c) 2003, 2007-11 M
 under the terms of the GNU General Public License, Project page at http://www.fftw.org/
 
 Libsamplerate, © Erik de Castro Lopo; under the terms of the GNU General Public License. Project page at
-http://www.mega-nerd.com/SRC/
+https://libsndfile.github.io/libsamplerate/
 
 TagLib – under the GNU Lesser General Public License version 2.1, project page at http://taglib.github.com/api/index.html
 
