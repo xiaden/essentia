@@ -227,7 +227,11 @@ AlgorithmStatus AudioLoader::process() {
                 char errstring[1204];
                 av_strerror(result, errstring, sizeof(errstring));
                 ostringstream msg;
-                msg << "AudioLoader: Error reading frame: " << errstring;
+                msg << "AudioLoader: Error reading frame: " << errstring
+                    << " [file=" << parameter("filename").toString()
+                    << ", codec=" << (_audioCodec ? _audioCodec->name : "unknown")
+                    << ", stream=" << _streamIdx
+                    << ", errcode=" << result << "]";
                 E_WARNING(msg.str());
             }
             shouldStop(true);
@@ -453,7 +457,16 @@ int AudioLoader::decodePacket() {
         // fatal decoding error for this packet
         char errstring[1204];
         av_strerror(send_result, errstring, sizeof(errstring));
-        E_WARNING("AudioLoader: avcodec_send_packet error: " << errstring);
+        ostringstream msg;
+        msg << "AudioLoader: avcodec_send_packet error: " << errstring
+            << " [file=" << parameter("filename").toString()
+            << ", codec=" << (_audioCodec ? _audioCodec->name : "unknown")
+            << ", stream=" << _streamIdx
+            << ", pkt_dts=" << _packet.dts
+            << ", pkt_pts=" << _packet.pts
+            << ", pkt_size=" << _packet.size
+            << ", errcode=" << send_result << "]";
+        E_WARNING(msg.str());
         return 0;
     }
 
@@ -465,14 +478,29 @@ int AudioLoader::decodePacket() {
     } else if (receive_result < 0) {
         char errstring[1204];
         av_strerror(receive_result, errstring, sizeof(errstring));
-        E_WARNING("AudioLoader: avcodec_receive_frame error: " << errstring);
+        ostringstream msg;
+        msg << "AudioLoader: avcodec_receive_frame error: " << errstring
+            << " [file=" << parameter("filename").toString()
+            << ", codec=" << (_audioCodec ? _audioCodec->name : "unknown")
+            << ", stream=" << _streamIdx
+            << ", pkt_dts=" << _packet.dts
+            << ", pkt_pts=" << _packet.pts
+            << ", pkt_size=" << _packet.size
+            << ", errcode=" << receive_result << "]";
+        E_WARNING(msg.str());
         return 0;
     }
 
     // We got a frame -> convert it to float interleaved
     // Guard: null frame data — corrupt decoder output
     if (!_decodedFrame->data[0]) {
-        E_WARNING("AudioLoader: decoded frame has null data pointer, skipping frame");
+        ostringstream msg;
+        msg << "AudioLoader: decoded frame has null data pointer, skipping frame"
+            << " [file=" << parameter("filename").toString()
+            << ", codec=" << (_audioCodec ? _audioCodec->name : "unknown")
+            << ", stream=" << _streamIdx
+            << ", pkt_dts=" << _packet.dts << "]";
+        E_WARNING(msg.str());
         return 0;
     }
     // Guard: channel count mismatch — swr was configured for _nChannels in openAudioFile()
@@ -525,7 +553,14 @@ int AudioLoader::decodePacket() {
                                          (const uint8_t**)_decodedFrame->data,
                                          inputSamples);
         if (samplesWritten <= 0) {
-            E_WARNING("AudioLoader: swr_convert returned no samples");
+            ostringstream msg;
+            msg << "AudioLoader: swr_convert returned no samples"
+                << " [file=" << parameter("filename").toString()
+                << ", codec=" << (_audioCodec ? _audioCodec->name : "unknown")
+                << ", input_samples=" << inputSamples
+                << ", in_fmt=" << av_get_sample_fmt_name(_audioCtx->sample_fmt)
+                << "]";
+            E_WARNING(msg.str());
             return 0;
         }
         // recompute bytes produced
